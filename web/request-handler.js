@@ -4,32 +4,32 @@ var httpHelper = require('./http-helpers.js');
 
 
 exports.handleRequest = function (req, res) {
-  //check to see if request is GET or POST
-  //if GET, serve static files from appropriate url
-
 
   //console.log(req.url);
-  if(req.method === 'GET'){
-    if(req.url === '/' || req.url === '/index.html'){
-      httpHelper.serveAssets('siteAssets', res, 'index.html', function(){
+  if (req.method === 'GET') {
+    var url = req.url === '/' ? '/index.html' : req.url;
+    httpHelper.serveAssets(res, url);
+  }
 
-      });
-    }
-    else if(req.url === '/styles.css'){
-      httpHelper.serveAssets('siteAssets', res, 'styles.css', function(){
+  if (req.method === 'POST') {
+    var newUrl = '';
+    req.on('data', function(chunk){
+      newUrl += chunk;
+    });
 
-      });
-    }
-    else if(archive.isURLArchived(req.url)){
-      httpHelper.serveAssets('archivedSites', res, req.url, function(){
-
-      })
-    }
-
-    else {
-      httpHelper.serveAssets('siteAssets', res, '/404.html', function(){
-      })
-    }
+    req.on('end', function(){
+      newUrl = newUrl.slice(4);
+      //check newUrl is already in sites
+      if(archive.isUrlInList(newUrl)){
+        res.writeHead(302, {'Location':'/' + newUrl });
+        res.end();
+      } else {
+        // insert the new url to our list in sites.txt
+        archive.addUrlToList(newUrl);
+        res.writeHead(302, {'Location':'/loading.html'});
+        res.end();
+      }
+    });
   }
 
 };

@@ -25,36 +25,44 @@ exports.initialize = function(pathsObj){
 // The following function names are provided to you to suggest how you might
 // modularize your code. Keep it clean!
 
-var urls = [];
+var urls = []; //TODO don't use this or readList on init
 
-exports.readListOfUrls = function(){
+exports.readListOfUrls = function(callback){
   //open sites.txt
   fs.readFile(exports.paths.list, 'utf-8', function(err, data){
-    urls = data.split('\n');
+    if(data) {
+      urls = data.split('\n');
+    }
+    if(callback) callback(urls);
   });
 };
 
 exports.isUrlInList = function(url){
   //searches list for specified url
-  return _.contains(urls, function(item){
-    return item === url;
-  });
+  console.log('checking list in URL, url list:', urls);
+  return _.contains(urls, url);
   //return true or false
 };
 
 exports.addUrlToList = function(url){
   //adds url to sites.txt
   if(!exports.isUrlInList(url)){
+    console.log('adding url to list:', url);
     urls.push(url);
+    var data = urls.join('\n') + '\n';
+    fs.writeFile(exports.paths.list, data);
   }
 };
 
 exports.isURLArchived = function(url){
   //searches sites archives/sites folder for file (url)
-  return fs.existsSync(exports.paths.archivedSites + url);
+  return fs.existsSync(exports.paths.archivedSites + '/' + url);
   //return true or false
 };
 
 exports.downloadUrls = function(){
 
 };
+
+exports.readListOfUrls();
+
